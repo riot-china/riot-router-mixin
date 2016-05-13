@@ -28,7 +28,7 @@ you can define router in any tag easily ( nesting define router support ).
 <child>
   <nest></nest>
   this.on('open', (ctx)={
-    assert.equal(ctx.request.query, 111)  //when route to /children/_111
+    assert.equal(ctx.request.query.id, 111)  //when route to /children/_111
     //...do some sync or async action
     this.trigger('ready');
   })
