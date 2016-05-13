@@ -14,7 +14,7 @@ you can define router in any tag easily ( nesting define router support ).
   
 ###Usage
 
-    <!-- language:javascript -->
+```js
     <parent>
       <child></child>
       this.mixin('router');
@@ -34,7 +34,8 @@ you can define router in any tag easily ( nesting define router support ).
       //define nest-route
       //...this.routeConfig
     </child>
-    
+```
+
 ###API
 
 ####tag.routeConfig(options: Object)
