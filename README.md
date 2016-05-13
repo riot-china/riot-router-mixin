@@ -37,9 +37,9 @@ you can define router in any tag easily.
     
 ###API
 
-####routeConfig(options: Object)
+####tag.routeConfig(options: Object)
 
-####options#path: String
+#####options#path: String
 
 the sub-tag corresponding URL
 
@@ -50,12 +50,27 @@ eg:
 1. /user/_:id
 2. /user?id=xxx
 
-####options#name: String
+#####options#name: String
+
 sub-tag name
-####options#before: Function
+
+#####options#before: Function
+
 a hook fn, trigger when the parent tag route to sub-tag
-####options#defaultRoute: Boolean
+
+#####options#defaultRoute: Boolean
+
 set the current url to a default router
+
+####tag.on('open', fn: Function)
+
+fn will apply when route to current tag
+
+####tag.ready()
+
+the tag will be presented when invocate ready.
+
+and then trigger sub-child's open event
 
 
     
