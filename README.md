@@ -52,25 +52,27 @@ eg:
 
 #####options#name: String
 
-sub-tag name
+sub-tag name.
 
-#####options#before: Function
+#####options#before(done: Function)
 
-a hook fn, trigger when the parent tag route to sub-tag
+a hook fn, trigger when the parent tag route to sub-tag.
+
+the route will be continue only apply done function.
 
 #####options#defaultRoute: Boolean
 
-set the current url to a default router
+set the current url to a default router.
 
 ####tag.on('open', fn: Function)
 
-fn will apply when route to current tag
+fn will apply when route to current tag.
 
 ####tag.ready()
 
-the tag will be presented when invocate ready.
+the tag will be presented when invocate ready,
 
-and then trigger sub-child's open event
+and then trigger sub-child's open event.
 
 
     
