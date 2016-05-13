@@ -15,25 +15,27 @@ you can define router in any tag easily ( nesting define router support ).
 ###Usage
 
 ```js
-    <parent>
-      <child></child>
-      this.mixin('router');
-      this.routeConfig={
-        path: '/children/_:id',
-        name: 'child'
-      }
-    </parent>
-    
-    <child>
-      <nest></nest>
-      this.on('open', (ctx)={
-        assert.equal(ctx.request.query, 111)  //when route to /children/_111
-        //...do some sync or async action
-        this.trigger('ready');
-      })
-      //define nest-route
-      //...this.routeConfig
-    </child>
+
+<parent>
+  <child></child>
+  this.mixin('router');
+  this.routeConfig={
+    path: '/children/_:id',
+    name: 'child'
+  }
+</parent>
+
+<child>
+  <nest></nest>
+  this.on('open', (ctx)={
+    assert.equal(ctx.request.query, 111)  //when route to /children/_111
+    //...do some sync or async action
+    this.trigger('ready');
+  })
+  //define nest-route
+  //...this.routeConfig
+</child>
+
 ```
 
 ###API
