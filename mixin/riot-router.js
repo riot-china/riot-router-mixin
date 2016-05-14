@@ -123,12 +123,12 @@ hub._routeTo = function(tag){
     tag.update();
     Object.keys(tag.parent.tags)
         .map(k=>tag.parent.tags[k])
-    .filter(t=>t!=tag)
-    .forEach(t=>{
-        if(tag.hasOwnProperty('hidden')){
-        t.hidden = true;
-        t.update();
-    }
+        .filter(t=>t!=tag)
+        .forEach(t=>{
+            if(tag.hasOwnProperty('hidden')){
+            t.hidden = true;
+            t.update();
+        }
 });
 };
 
