@@ -19,10 +19,10 @@ you can define router in any tag easily ( nesting define router support ).
 <parent>
   <child></child>
   this.mixin('router');
-  this.routeConfig={
+  this.routeConfig = [{
     path: '/children/_:id',
     name: 'child'
-  }
+  }]
 </parent>
 
 <child>
