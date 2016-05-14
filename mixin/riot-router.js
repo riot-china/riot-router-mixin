@@ -9,8 +9,8 @@ hub.defaultRoute = null;
 
 hub.init = function(){
     hub._parseRoute();
-    riot.route.start();
     riot.route(hub._doRoute());
+    riot.route.start();
     nextTick(riot.route.exec, 0);
     function nextTick(fn){
         setTimeout(fn, 0);
@@ -37,11 +37,11 @@ hub._parseRoute = function(){
         req.hints = [];
         if(uriParts.length){
             req.hints = uriParts.map((i, index)=>{
-                if(index === 0){
-                    return i;
-                }
-                return combineUriParts(uriParts, index, i);
-            });
+                    if(index === 0){
+                return i;
+            }
+            return combineUriParts(uriParts, index, i);
+        });
         }
         return req;
     });
@@ -54,9 +54,10 @@ hub._parseRoute = function(){
     }
 };
 
-hub.registerRoute = function({path, name, before}, container){
+hub.registerRoute = function({path, name, before, redirectTo}, container){
     hub.routesMap[path] = {
         before,
+        redirectTo,
         tag: container.tags[name]};
     return this;
 };
@@ -65,8 +66,9 @@ hub._doRoute = function(){
     return req => {
         let me = this;
         let isFounded = false;
+        let isBreak = false;
         function recursiveHints(hints){
-            if(!hints.length){
+            if(!hints.length || isBreak){
                 return;
             }
             let path = hints[0];
@@ -83,13 +85,17 @@ hub._doRoute = function(){
             let ctx = {
                 request
             };
+            if(route.redirectTo){
+                isBreak = true;
+                return riot.route(route.redirectTo);
+            }
             if(route.before){
-                route.before.apply(tag, [done]);
+                route.before.apply(tag, [done, request]);
                 return;
             }
             done();
             function done(){
-                if(tag.hasOwnProperty('hidden') && tag.hidden){
+                if(tag.hasOwnProperty('hidden')){
                     tag.one('ready', ()=>{
                         hub._routeTo(tag);
                     recursiveHints(hints.slice(1));
@@ -102,33 +108,38 @@ hub._doRoute = function(){
         }
         recursiveHints(req.hints);
         if(!isFounded){
-            let url = hub.defaultRoute.path;
-            let paramsParts = url.match(/_[a-zA-Z0-9:]+/g);
-            if(paramsParts && paramsParts.length){
-                paramsParts.map(part=>{
-                    let key = part.slice(2);
-                let value = hub.defaultRoute.defaultRoute.params
-                    && hub.defaultRoute.defaultRoute.params[key]
-                    || "";
-                url = url.replace(new RegExp('_:' + key + '+'), '_' + value);
-            });
+            try{
+                let url = hub.defaultRoute.path;
+                let paramsParts = url.match(/_[a-zA-Z0-9:]+/g);
+                if(paramsParts && paramsParts.length){
+                    paramsParts.map(part=>{
+                        let key = part.slice(2);
+                    let value = hub.defaultRoute.defaultRoute.params
+                        && hub.defaultRoute.defaultRoute.params[key]
+                        || "";
+                    url = url.replace(new RegExp('_:' + key + '+'), '_' + value);
+                });
+                }
+                riot.route('/' + url);
+            }catch(e){
+                console.warn(e);
+                console.info('404')
             }
-            riot.route('/' + url);
         }
     };
 };
 
 hub._routeTo = function(tag){
-    tag.hidden = !tag.hidden;
+    tag.hidden = false;
     tag.update();
     Object.keys(tag.parent.tags)
         .map(k=>tag.parent.tags[k])
-        .filter(t=>t!=tag)
-        .forEach(t=>{
-            if(tag.hasOwnProperty('hidden')){
-            t.hidden = true;
-            t.update();
-        }
+    .filter(t=>t!=tag)
+    .forEach(t=>{
+        if(tag.hasOwnProperty('hidden')){
+        t.hidden = true;
+        t.update();
+    }
 });
 };
 
@@ -143,13 +154,23 @@ hub._getMetaDataFromRouteMap = function(routeKey){
             let paramValues = (extractParams(routeKey) || []).map(i=>i.slice(1));
             return {
                 route,
-                params: _.object(paramKeys, paramValues)
+                params: composeObject(paramKeys, paramValues)
             };
         }
     }
     return {
         tag: null,
         params: null
+    };
+    function composeObject(ks, vs){
+        var o = {};
+        if(!Array.isArray(ks) || !Array.isArray(vs) || ks.length != vs.length){
+            return o;
+        }
+        ks.forEach((k, index)=>{
+            o[k] = vs[index]
+        });
+        return o;
     };
     function extractParams(path){
         return path.match(/_[a-zA-Z0-9:]+/g);
@@ -168,7 +189,7 @@ export var router = {
 
     routesMap: null,
 
-    _registerRoute: function({path, name, before}, container){
+    _registerRoute: function({path, name, before, redirectTo}, container){
         let me = this;
         if(!me.routesMap){
             me.routesMap = {};
@@ -177,7 +198,7 @@ export var router = {
             name,
             before,
             tag: container.tags[name]};
-        hub.registerRoute({path: me.prefixPath + path, name, before}, container);
+        hub.registerRoute({path: me.prefixPath + path, name, before, redirectTo}, container);
         return this;
     },
 
