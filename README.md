@@ -8,6 +8,10 @@ a componentized router, koa or express like.
     
 you can define router in any tag easily ( nesting define router support ).
 
+###Demo
+
+https://github.com/leekangtaqi/riot-router-mixin-example
+
 ###Install
 
     npm install riot-router-mixin
