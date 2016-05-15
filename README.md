@@ -23,6 +23,16 @@ https://github.com/leekangtaqi/riot-router-mixin-example
 <parent>
   <child></child>
   this.mixin('router');
+  this.use(function(next){
+    //filter...
+    console.log('middleware1')
+    next();
+  })
+  this.use(function(next){
+    //filter...
+    console.log('middleware2')
+    next();
+  })
   this.routeConfig = [{
     path: '/children/_:id',
     name: 'child'
@@ -70,6 +80,14 @@ the route will be continue only apply done function.
 #####options#defaultRoute: Boolean
 
 set the current url to a default router.
+
+####tag.use: Function
+
+koa and express like middleware, route filter
+
+use#next: Function
+
+call next to continue
 
 ####tag.on('open', fn: Function)
 
