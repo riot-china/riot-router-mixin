@@ -6,7 +6,7 @@ a micro router mixin based riotjs
 
 a componentized router, koa or express like.
     
-you can define router in any tag easily ( nesting define router support ).
+you can define router in any tag easily ( nesting define router and middleware support).
 
 ###Demo
 
