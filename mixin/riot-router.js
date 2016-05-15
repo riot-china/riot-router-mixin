@@ -5,6 +5,8 @@ var hub = riot.observable();
 
 hub.routesMap = {};
 
+hub.entry = null;
+
 hub.defaultRoute = null;
 
 hub.init = function(){
@@ -54,6 +56,10 @@ hub._parseRoute = function(){
     }
 };
 
+hub.composeEntry = function(tag){
+    !hub.entry && (hub.entry = tag);
+};
+
 hub.registerRoute = function({path, name, before, redirectTo}, container){
     hub.routesMap[path] = {
         before,
@@ -64,7 +70,7 @@ hub.registerRoute = function({path, name, before, redirectTo}, container){
 
 hub._doRoute = function(){
     return req => {
-        let me = this;
+        var me = this;
         let isFounded = false;
         let isBreak = false;
         function recursiveHints(hints){
@@ -74,7 +80,6 @@ hub._doRoute = function(){
             let path = hints[0];
             let request = {};
             let {route, params} = me._getMetaDataFromRouteMap(path);
-
             if(!route){
                 return recursiveHints(hints.slice(1));
             }
@@ -95,15 +100,21 @@ hub._doRoute = function(){
             }
             done();
             function done(){
-                if(tag.hasOwnProperty('hidden')){
-                    tag.one('ready', ()=>{
-                        hub._routeTo(tag);
-                    recursiveHints(hints.slice(1));
-                });
-                    tag.trigger('open', ctx);
-                    return;
+                if(hub.entry.middlewares.length){
+                    return hub._execMiddleware(hub.entry.middlewares, {path, request}, next);
                 }
-                recursiveHints(hints.slice(1));
+                next();
+                function next(){
+                    if(tag.hasOwnProperty('hidden')){
+                        tag.one('ready', ()=>{
+                            hub._routeTo(tag);
+                        recursiveHints(hints.slice(1));
+                    });
+                        tag.trigger('open', ctx);
+                        return;
+                    }
+                    recursiveHints(hints.slice(1));
+                }
             }
         }
         recursiveHints(req.hints);
@@ -127,6 +138,18 @@ hub._doRoute = function(){
             }
         }
     };
+};
+
+hub._execMiddleware = function(middlewares, param, done){
+    function recursiveExec(middlewares){
+        if(!middlewares.length){
+            return done();
+        }
+        middlewares[0].apply(param, [function(){
+            return recursiveExec(middlewares.slice(1));
+        }]);
+    }
+    recursiveExec(middlewares);
 };
 
 hub._routeTo = function(tag){
@@ -187,6 +210,8 @@ export var router = {
 
     prefixPath: '',
 
+    middlewares: [],
+
     routesMap: null,
 
     _registerRoute: function({path, name, before, redirectTo}, container){
@@ -202,12 +227,19 @@ export var router = {
         return this;
     },
 
+    use: function(fn){
+        this.middlewares.push(fn);
+    },
+
     prefix: function(prefix){
         this.prefixPath = prefix;
         return this;
     },
 
     routeConfig: function(routes){
+        if(!this.parent){
+            hub.composeEntry(this);
+        }
         if(!this.prefixPath && this.parent && this.parent.routesMap){
             this.prefixPath = (this.parent.prefixPath || '') + getPrefix(this);
         }
