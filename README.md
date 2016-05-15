@@ -24,6 +24,7 @@ https://github.com/leekangtaqi/riot-router-mixin-example
   <child></child>
   this.mixin('router');
   this.use(function(next){
+    console.log(this); //'this' is context object, contains path_to string and request object
     //filter...
     console.log('middleware1')
     next();
